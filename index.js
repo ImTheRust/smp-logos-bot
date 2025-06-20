@@ -11,6 +11,7 @@ const {
   ButtonStyle,
 } = require("discord.js");
 require("dotenv").config();
+const ticketSystem = require("./ticket-system.js");
 
 const client = new Client({
   intents: [
@@ -30,6 +31,41 @@ const commands = [
   {
     name: "review",
     description: "Leave a review for a product or service",
+    type: ApplicationCommandType.ChatInput,
+  },
+  {
+    name: "ticket-panel",
+    description: "Create the main ticket panel (owner only).",
+    type: ApplicationCommandType.ChatInput,
+  },
+  {
+    name: "status-help",
+    description: "Show ticket status definitions (owner only).",
+    type: ApplicationCommandType.ChatInput,
+  },
+  {
+    name: "status-new-comm",
+    description: "Set ticket status to New Commission (owner only).",
+    type: ApplicationCommandType.ChatInput,
+  },
+  {
+    name: "status-waiting-on-updates",
+    description: "Set ticket status to Waiting on Updates (owner only).",
+    type: ApplicationCommandType.ChatInput,
+  },
+  {
+    name: "status-comm-paused",
+    description: "Set ticket status to Commission Paused (owner only).",
+    type: ApplicationCommandType.ChatInput,
+  },
+  {
+    name: "status-being-made",
+    description: "Set ticket status to Being Made (owner only).",
+    type: ApplicationCommandType.ChatInput,
+  },
+  {
+    name: "status-comm-fully-done",
+    description: "Set ticket status to Commission Fully Done (owner only).",
     type: ApplicationCommandType.ChatInput,
   },
 ];
@@ -68,15 +104,38 @@ client.on("interactionCreate", async (interaction) => {
       await handleProfileCommand(interaction);
     } else if (commandName === "review") {
       await handleReviewCommand(interaction);
+    } else if (commandName === "ticket-panel") {
+      await ticketSystem.handleTicketPanel(interaction);
+    } else if (commandName === "status-help") {
+       if (!interaction.member.roles.cache.has(ticketSystem.CONFIG.OWNER_ROLE_ID)) {
+            return interaction.reply({ content: "You do not have permission to use this command.", ephemeral: true });
+       }
+       await interaction.reply({ embeds: [ticketSystem.CONFIG.STATUS_HELP_EMBED], ephemeral: true });
+    } else if (commandName.startsWith("status-")) {
+        await ticketSystem.handleStatus(interaction);
     }
   } else if (interaction.isButton()) {
-    if (interaction.customId === "leave_review_button") {
+    const { customId } = interaction;
+    if (customId === "leave_review_button") {
       await handleReviewCommand(interaction);
+    } else if (["prices_button", "payment_button", "back_to_main_panel"].includes(customId)) {
+        await ticketSystem.handlePanelButtons(interaction);
+    } else {
+        await ticketSystem.handleTicketButtons(interaction);
     }
   } else if (interaction.isModalSubmit()) {
-    if (interaction.customId === "review_modal") {
+     const { customId } = interaction;
+    if (customId === "review_modal") {
       await handleReviewModalSubmit(interaction);
+    } else if (customId === 'add_user_modal') {
+      await ticketSystem.handleAddUserModal(interaction);
+    } else {
+      await ticketSystem.handleModalSubmit(interaction);
     }
+  } else if (interaction.isStringSelectMenu()) {
+      if(interaction.customId === 'ticket_select_menu') {
+          await ticketSystem.handleSelectMenu(interaction);
+      }
   }
 });
 
