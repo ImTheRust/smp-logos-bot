@@ -8,7 +8,7 @@
     "dev": "nodemon index.js"
   },
   "keywords": ["discord", "bot", "profile"],
-  "author": "",
+  "author": "RustFX",
   "license": "MIT",
   "dependencies": {
     "discord.js": "^14.14.1",
