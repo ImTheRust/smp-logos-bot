@@ -106,26 +106,17 @@ async function handleTicketPanel(interaction) {
 
 async function handlePanelButtons(interaction) {
     const { customId } = interaction;
-    const backButton = new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('back_to_main_panel').setLabel('Back').setStyle(ButtonStyle.Secondary));
 
-    if (customId === 'prices_button') {
-        await interaction.update({ embeds: [CONFIG.PRICES_EMBED], components: [backButton] });
-    } else if (customId === 'payment_button') {
-        await interaction.update({ embeds: [CONFIG.PAYMENT_METHODS_EMBED], components: [backButton] });
-    } else if (customId === 'back_to_main_panel') {
-         const mainEmbed = new EmbedBuilder().setTitle("Rusts GFX | Store").setColor("#5865F2").setImage(CONFIG.BANNER_IMAGE_URL);
-         const menuRow = new ActionRowBuilder().addComponents(
-            new StringSelectMenuBuilder().setCustomId('ticket_select_menu').setPlaceholder('Create a Ticket').addOptions([
-                { label: 'Order', description: 'Place a new order.', value: 'order', emoji: '🛒' },
-                { label: 'Support', description: 'Get help or ask questions.', value: 'support', emoji: '❓' },
-                { label: 'Application', description: 'Apply for a position.', value: 'application', emoji: '📄' }
-            ])
-        );
-        const infoRow = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('prices_button').setLabel('Prices').setStyle(ButtonStyle.Success).setEmoji('💰'),
-            new ButtonBuilder().setCustomId('payment_button').setLabel('Payment').setStyle(ButtonStyle.Primary).setEmoji('💳'),
-        );
-        await interaction.update({ embeds: [mainEmbed], components: [menuRow, infoRow] });
+    if (customId === "prices_button") {
+        await interaction.reply({
+            embeds: [CONFIG.PRICES_EMBED],
+            ephemeral: true,
+        });
+    } else if (customId === "payment_button") {
+        await interaction.reply({
+            embeds: [CONFIG.PAYMENT_METHODS_EMBED],
+            ephemeral: true,
+        });
     }
 }
 
