@@ -16,28 +16,28 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildMessages
-  ]
+    GatewayIntentBits.GuildMessages,
+  ],
 });
 
 // Command definitions
 const commands = [
   {
-    name: 'profile',
-    description: 'Shows information about your Discord profile',
-    type: ApplicationCommandType.ChatInput
+    name: "profile",
+    description: "Shows information about your Discord profile",
+    type: ApplicationCommandType.ChatInput,
   },
   {
-    name: 'review',
-    description: 'Leave a review for a product or service',
-    type: ApplicationCommandType.ChatInput
+    name: "review",
+    description: "Leave a review for a product or service",
+    type: ApplicationCommandType.ChatInput,
   },
 ];
 
 const REVIEW_ROLE_ID = "1385512549428236299";
 const REVIEW_CHANNEL_ID = "1385512596878262375";
 
-client.once('ready', () => {
+client.once("ready", () => {
   console.log(`Logged in as ${client.user.tag}!`);
   registerCommands();
 });
@@ -45,7 +45,7 @@ client.once('ready', () => {
 async function registerCommands() {
   try {
     const guildId = process.env.GUILD_ID;
-    
+
     if (guildId) {
       // Register commands for a specific guild (faster for testing)
       await client.application.commands.set(commands, guildId);
@@ -53,28 +53,28 @@ async function registerCommands() {
     } else {
       // Register commands globally
       await client.application.commands.set(commands);
-      console.log('Registered commands globally');
+      console.log("Registered commands globally");
     }
   } catch (error) {
-    console.error('Error registering commands:', error);
+    console.error("Error registering commands:", error);
   }
 }
 
-client.on('interactionCreate', async interaction => {
+client.on("interactionCreate", async (interaction) => {
   if (interaction.isChatInputCommand()) {
     const { commandName } = interaction;
 
-    if (commandName === 'profile') {
+    if (commandName === "profile") {
       await handleProfileCommand(interaction);
-    } else if (commandName === 'review') {
+    } else if (commandName === "review") {
       await handleReviewCommand(interaction);
     }
   } else if (interaction.isButton()) {
-    if (interaction.customId === 'leave_review_button') {
+    if (interaction.customId === "leave_review_button") {
       await handleReviewCommand(interaction);
     }
   } else if (interaction.isModalSubmit()) {
-    if (interaction.customId === 'review_modal') {
+    if (interaction.customId === "review_modal") {
       await handleReviewModalSubmit(interaction);
     }
   }
@@ -89,21 +89,21 @@ async function handleReviewCommand(interaction) {
   }
 
   const modal = new ModalBuilder()
-    .setCustomId('review_modal')
-    .setTitle('Leave a Review');
+    .setCustomId("review_modal")
+    .setTitle("Leave a Review");
 
   const productInput = new TextInputBuilder()
-    .setCustomId('product_input')
-    .setLabel('What product/service are you reviewing?')
+    .setCustomId("product_input")
+    .setLabel("What product/service are you reviewing?")
     .setStyle(TextInputStyle.Short)
-    .setPlaceholder('e.g., Basic Logo, Thumbnail Design')
+    .setPlaceholder("e.g., Basic Logo, Thumbnail Design")
     .setRequired(true);
 
   const ratingInput = new TextInputBuilder()
-    .setCustomId('rating_input')
-    .setLabel('Rating (1-5)')
+    .setCustomId("rating_input")
+    .setLabel("Rating (1-5)")
     .setStyle(TextInputStyle.Short)
-    .setPlaceholder('Please enter a number from 1 to 5')
+    .setPlaceholder("Please enter a number from 1 to 5")
     .setMinLength(1)
     .setMaxLength(1)
     .setRequired(true);
@@ -127,13 +127,13 @@ async function handleReviewCommand(interaction) {
 async function handleReviewModalSubmit(interaction) {
   await interaction.deferReply({ ephemeral: true });
 
-  const product = interaction.fields.getTextInputValue('product_input');
-  const rating = parseInt(interaction.fields.getTextInputValue('rating_input'));
-  const feedback = interaction.fields.getTextInputValue('feedback_input');
+  const product = interaction.fields.getTextInputValue("product_input");
+  const rating = parseInt(interaction.fields.getTextInputValue("rating_input"));
+  const feedback = interaction.fields.getTextInputValue("feedback_input");
 
   if (isNaN(rating) || rating < 1 || rating > 5) {
     return interaction.editReply({
-      content: 'Invalid rating. Please provide a number between 1 and 5.',
+      content: "Invalid rating. Please provide a number between 1 and 5.",
       ephemeral: true,
     });
   }
@@ -142,12 +142,12 @@ async function handleReviewModalSubmit(interaction) {
   if (!reviewChannel) {
     console.error(`Could not find review channel with ID: ${REVIEW_CHANNEL_ID}`);
     return interaction.editReply({
-      content: 'An error occurred. Could not find the reviews channel.',
+      content: "An error occurred. Could not find the reviews channel.",
       ephemeral: true,
     });
   }
 
-  const starRating = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+  const starRating = "⭐".repeat(rating) + "☆".repeat(5 - rating);
 
   const reviewEmbed = new EmbedBuilder()
     .setAuthor({
@@ -156,21 +156,21 @@ async function handleReviewModalSubmit(interaction) {
     })
     .setTitle(`New Review for ${product}!`)
     .setThumbnail(interaction.user.displayAvatarURL({ dynamic: true, size: 256 }))
-    .setDescription(`*"${feedback}"*`)
-    .addFields({ name: 'Rating', value: starRating, inline: false })
-    .setColor('#FFD700')
+    .setDescription(`*“${feedback}”*`)
+    .addFields({ name: "Rating", value: starRating, inline: false })
+    .setColor("#FFD700")
     .setTimestamp()
     .setFooter({
-      text: 'SMP Logos Bot • Review System',
+      text: "SMP Logos Bot • Review System",
       iconURL: client.user.displayAvatarURL(),
     });
 
   const reviewButton = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId('leave_review_button')
-      .setLabel('Leave Your Own Review')
+      .setCustomId("leave_review_button")
+      .setLabel("Leave Your Own Review")
       .setStyle(ButtonStyle.Primary)
-      .setEmoji('✍️')
+      .setEmoji("✍️")
   );
 
   await reviewChannel.send({
@@ -179,7 +179,7 @@ async function handleReviewModalSubmit(interaction) {
   });
 
   await interaction.editReply({
-    content: 'Thank you! Your review has been submitted successfully.',
+    content: "Thank you! Your review has been submitted successfully.",
     ephemeral: true,
   });
 }
@@ -187,74 +187,95 @@ async function handleReviewModalSubmit(interaction) {
 async function handleProfileCommand(interaction) {
   const user = interaction.user;
   const member = interaction.member;
-  
+
   // Get user's avatar URL
   const avatarURL = user.displayAvatarURL({ size: 256, dynamic: true });
-  
+
   // Calculate account age
-  const accountAge = Math.floor((Date.now() - user.createdTimestamp) / (1000 * 60 * 60 * 24));
-  
+  const accountAge = Math.floor(
+    (Date.now() - user.createdTimestamp) / (1000 * 60 * 60 * 24)
+  );
+
   // Calculate server join date (if member is available)
   let serverJoinAge = null;
   if (member && member.joinedTimestamp) {
-    serverJoinAge = Math.floor((Date.now() - member.joinedTimestamp) / (1000 * 60 * 60 * 24));
+    serverJoinAge = Math.floor(
+      (Date.now() - member.joinedTimestamp) / (1000 * 60 * 60 * 24)
+    );
   }
-  
+
   // Get user roles (excluding @everyone)
-  const roles = member ? member.roles.cache
-    .filter(role => role.id !== interaction.guild.id)
-    .map(role => role.name)
-    .join(', ') || 'No roles' : 'N/A';
-  
+  const roles =
+    member
+      ? member.roles.cache
+          .filter((role) => role.id !== interaction.guild.id)
+          .map((role) => role.name)
+          .join(", ") || "No roles"
+      : "N/A";
+
   // Create embed
   const embed = new EmbedBuilder()
-    .setColor(0x0099FF)
+    .setColor(0x0099ff)
     .setTitle(`Profile: ${user.username}`)
     .setThumbnail(avatarURL)
     .addFields(
-      { name: '👤 Username', value: user.username, inline: true },
-      { name: '🆔 User ID', value: user.id, inline: true },
-      { name: '📅 Account Created', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:F>`, inline: false },
-      { name: '⏰ Account Age', value: `${accountAge} days`, inline: true },
-      { name: '🎭 Display Name', value: member?.displayName || user.username, inline: true },
-      { name: '🏷️ Roles', value: roles, inline: false }
+      { name: "👤 Username", value: user.username, inline: true },
+      { name: "🆔 User ID", value: user.id, inline: true },
+      {
+        name: "📅 Account Created",
+        value: `<t:${Math.floor(user.createdTimestamp / 1000)}:F>`,
+        inline: false,
+      },
+      { name: "⏰ Account Age", value: `${accountAge} days`, inline: true },
+      {
+        name: "🎭 Display Name",
+        value: member?.displayName || user.username,
+        inline: true,
+      },
+      { name: "🏷️ Roles", value: roles, inline: false }
     )
     .setFooter({ text: `Requested by ${user.username}`, iconURL: avatarURL })
     .setTimestamp();
-  
+
   // Add server join info if available
   if (serverJoinAge !== null) {
     embed.addFields(
-      { name: '📥 Joined Server', value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:F>`, inline: false },
-      { name: '⏱️ Server Member For', value: `${serverJoinAge} days`, inline: true }
+      {
+        name: "📥 Joined Server",
+        value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:F>`,
+        inline: false,
+      },
+      { name: "⏱️ Server Member For", value: `${serverJoinAge} days`, inline: true }
     );
   }
-  
+
   // Add status if available
   if (member?.presence?.status) {
     const statusEmoji = {
-      'online': '🟢',
-      'idle': '🟡',
-      'dnd': '🔴',
-      'offline': '⚫'
+      online: "🟢",
+      idle: "🟡",
+      dnd: "🔴",
+      offline: "⚫",
     };
-    embed.addFields({ 
-      name: '📊 Status', 
-      value: `${statusEmoji[member.presence.status] || '❓'} ${member.presence.status}`, 
-      inline: true 
+    embed.addFields({
+      name: "📊 Status",
+      value: `${statusEmoji[member.presence.status] || "❓"} ${
+        member.presence.status
+      }`,
+      inline: true,
     });
   }
-  
+
   await interaction.reply({ embeds: [embed] });
 }
 
 // Error handling
-client.on('error', error => {
-  console.error('Discord client error:', error);
+client.on("error", (error) => {
+  console.error("Discord client error:", error);
 });
 
-process.on('unhandledRejection', error => {
-  console.error('Unhandled promise rejection:', error);
+process.on("unhandledRejection", (error) => {
+  console.error("Unhandled promise rejection:", error);
 });
 
 // Login
