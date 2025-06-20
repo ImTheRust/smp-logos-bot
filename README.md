@@ -1,4 +1,4 @@
-# Discord Profile Bot
+# SMP Logos Bot
 
 A Discord bot that displays detailed user profile information when using the `/profile` command.
 

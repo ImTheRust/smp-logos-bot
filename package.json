@@ -1,5 +1,5 @@
 {
-  "name": "discord-profile-bot",
+  "name": "smp-logos-bot",
   "version": "1.0.0",
   "description": "A Discord bot that shows user profile information",
   "main": "index.js",
