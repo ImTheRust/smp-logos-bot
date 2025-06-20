@@ -46,6 +46,9 @@ jspm_packages/
 # dotenv environment variables file
 .env
 
+# npm lock file
+package-lock.json
+
 # IDE files
 .vscode/
 .idea/
