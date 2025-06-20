@@ -140,7 +140,7 @@ client.on("interactionCreate", async (interaction) => {
       await handleReviewCommand(interaction);
     } else if (customId.startsWith("role_")) {
         await rulesSystem.handleRoleButton(interaction);
-    } else if (["prices_button", "payment_button", "back_to_main_panel"].includes(customId)) {
+    } else if (["prices_button", "payment_button", "status_button", "back_to_main_panel"].includes(customId)) {
         await ticketSystem.handlePanelButtons(interaction);
     } else {
         await ticketSystem.handleTicketButtons(interaction);
