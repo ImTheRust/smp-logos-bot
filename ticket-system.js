@@ -98,6 +98,7 @@ async function handleTicketPanel(interaction) {
     const infoRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId('prices_button').setLabel('Prices').setStyle(ButtonStyle.Success).setEmoji('💰'),
         new ButtonBuilder().setCustomId('payment_button').setLabel('Payment').setStyle(ButtonStyle.Primary).setEmoji('💳'),
+        new ButtonBuilder().setCustomId('status_button').setLabel('Status').setStyle(ButtonStyle.Secondary).setEmoji('📊')
     );
 
     await interaction.channel.send({ embeds: [mainEmbed], components: [menuRow, infoRow] });
@@ -115,6 +116,20 @@ async function handlePanelButtons(interaction) {
     } else if (customId === "payment_button") {
         await interaction.reply({
             embeds: [CONFIG.PAYMENT_METHODS_EMBED],
+            ephemeral: true,
+        });
+    } else if (customId === "status_button") {
+        const statusEmbed = new EmbedBuilder()
+            .setColor("#5865F2")
+            .setDescription(
+                ":red_circle: - New Commission\n" +
+                ":purple_circle: - Waiting on Updates\n" +
+                ":yellow_circle: - Commission Paused\n" +
+                ":green_circle: - Being Made\n" +
+                ":blue_circle: - Commission Fully Done"
+            );
+        await interaction.reply({
+            embeds: [statusEmbed],
             ephemeral: true,
         });
     }

@@ -13,6 +13,7 @@ const {
 require("dotenv").config();
 const ticketSystem = require("./ticket-system.js");
 const rulesSystem = require("./rules-system.js");
+const welcome = require("./welcome.js");
 
 const client = new Client({
   intents: [
@@ -106,6 +107,10 @@ async function registerCommands() {
     console.error("Error registering commands:", error);
   }
 }
+
+client.on("guildMemberAdd", (member) => {
+    welcome.handleWelcome(member);
+});
 
 client.on("interactionCreate", async (interaction) => {
   if (interaction.isChatInputCommand()) {
