@@ -1,7 +1,2 @@
-# See https://nixpacks.com/docs/configuration/file for options
-
 [phases.install]
-cmds = ["npm install --legacy-peer-deps"]
-
-[start]
-cmd = "npm start" 
+cmds = ["npm install"] 
