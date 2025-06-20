@@ -68,6 +68,11 @@ const commands = [
     description: "Set ticket status to Commission Fully Done (owner only).",
     type: ApplicationCommandType.ChatInput,
   },
+  {
+    name: "serverinfo",
+    description: "Displays detailed information about the server.",
+    type: ApplicationCommandType.ChatInput,
+  },
 ];
 
 const REVIEW_ROLE_ID = "1385512549428236299";
@@ -113,6 +118,8 @@ client.on("interactionCreate", async (interaction) => {
        await interaction.reply({ embeds: [ticketSystem.CONFIG.STATUS_HELP_EMBED], ephemeral: true });
     } else if (commandName.startsWith("status-")) {
         await ticketSystem.handleStatus(interaction);
+    } else if (commandName === "serverinfo") {
+        await handleServerInfoCommand(interaction);
     }
   } else if (interaction.isButton()) {
     const { customId } = interaction;
@@ -324,6 +331,49 @@ async function handleProfileCommand(interaction) {
       inline: true,
     });
   }
+
+  await interaction.reply({ embeds: [embed] });
+}
+
+async function handleServerInfoCommand(interaction) {
+  const { guild } = interaction;
+  await guild.members.fetch(); // Fetch all members to get accurate counts
+
+  const owner = await guild.fetchOwner();
+
+  const verificationLevels = {
+    0: 'None',
+    1: 'Low',
+    2: 'Medium',
+    3: 'High',
+    4: 'Very High'
+  };
+
+  const embed = new EmbedBuilder()
+    .setColor(0x5865f2)
+    .setTitle(`Server Info: ${guild.name}`)
+    .setThumbnail(guild.iconURL({ dynamic: true, size: 512 }))
+    .addFields(
+      { name: "👑 Owner", value: owner.user.tag, inline: true },
+      { name: "🆔 Server ID", value: guild.id, inline: true },
+      { name: "📅 Created On", value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:F>`, inline: false },
+      {
+        name: `👥 Members (${guild.memberCount})`,
+        value: `**Humans:** ${guild.members.cache.filter(member => !member.user.bot).size}\n**Bots:** ${guild.members.cache.filter(member => member.user.bot).size}`,
+        inline: true,
+      },
+      {
+        name: `💬 Channels (${guild.channels.cache.size})`,
+        value: `**Text:** ${guild.channels.cache.filter(c => c.type === 0).size}\n**Voice:** ${guild.channels.cache.filter(c => c.type === 2).size}\n**Categories:** ${guild.channels.cache.filter(c => c.type === 4).size}`,
+        inline: true,
+      },
+      { name: `🎭 Roles`, value: `${guild.roles.cache.size}`, inline: true },
+      { name: `✨ Boost Level`, value: `${guild.premiumTier || 'Level 0'}`, inline: true },
+      { name: `🚀 Boosts`, value: `${guild.premiumSubscriptionCount || 0}`, inline: true },
+       { name: `✅ Verification`, value: `${verificationLevels[guild.verificationLevel]}`, inline: true }
+    )
+    .setFooter({ text: `Requested by ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL({ dynamic: true })})
+    .setTimestamp();
 
   await interaction.reply({ embeds: [embed] });
 }
