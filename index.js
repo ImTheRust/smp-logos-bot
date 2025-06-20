@@ -12,6 +12,7 @@ const {
 } = require("discord.js");
 require("dotenv").config();
 const ticketSystem = require("./ticket-system.js");
+const rulesSystem = require("./rules-system.js");
 
 const client = new Client({
   intents: [
@@ -73,6 +74,11 @@ const commands = [
     description: "Shows detailed information about the server.",
     type: ApplicationCommandType.ChatInput,
   },
+  {
+    name: "rules",
+    description: "Create the main server rules panel (admin only).",
+    type: ApplicationCommandType.ChatInput,
+  },
 ];
 
 const REVIEW_ROLE_ID = "1385512549428236299";
@@ -120,11 +126,15 @@ client.on("interactionCreate", async (interaction) => {
         await ticketSystem.handleStatus(interaction);
     } else if (commandName === "serverinfo") {
         await handleServerInfoCommand(interaction);
+    } else if (commandName === "rules") {
+        await rulesSystem.handleRulesPanel(interaction);
     }
   } else if (interaction.isButton()) {
     const { customId } = interaction;
     if (customId === "leave_review_button") {
       await handleReviewCommand(interaction);
+    } else if (customId.startsWith("role_")) {
+        await rulesSystem.handleRoleButton(interaction);
     } else if (["prices_button", "payment_button", "back_to_main_panel"].includes(customId)) {
         await ticketSystem.handlePanelButtons(interaction);
     } else {
@@ -142,6 +152,8 @@ client.on("interactionCreate", async (interaction) => {
   } else if (interaction.isStringSelectMenu()) {
       if(interaction.customId === 'ticket_select_menu') {
           await ticketSystem.handleSelectMenu(interaction);
+      } else if (interaction.customId === 'guidelines_menu') {
+          await rulesSystem.handleGuidelinesMenu(interaction);
       }
   }
 });
