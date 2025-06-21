@@ -51,25 +51,22 @@ const TICKET_MODALS = {
         .setCustomId('order_ticket_modal')
         .setTitle('New Order Ticket')
         .addComponents(
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('request_details').setLabel("Request Details").setStyle(TextInputStyle.Paragraph).setRequired(true)),
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('due_date').setLabel("Due Date").setStyle(TextInputStyle.Short).setRequired(true)),
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('additional_info').setLabel("Additional Information").setStyle(TextInputStyle.Paragraph).setRequired(false)),
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('color_palette').setLabel("Color Palette").setStyle(TextInputStyle.Short).setRequired(false)),
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('budget').setLabel("Budget").setStyle(TextInputStyle.Short).setRequired(true))
+            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('request_details').setLabel("What are you looking to order?").setStyle(TextInputStyle.Paragraph).setRequired(true)),
+            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('due_date').setLabel("What is the due date?").setStyle(TextInputStyle.Short).setRequired(true)),
+            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('additional_info').setLabel("Any additional information?").setStyle(TextInputStyle.Paragraph).setRequired(false)),
+            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('color_palette').setLabel("Color palette preference?").setStyle(TextInputStyle.Short).setRequired(false)),
+            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('budget').setLabel("What is your budget?").setStyle(TextInputStyle.Short).setRequired(true))
         ),
     support: new ModalBuilder()
         .setCustomId('support_ticket_modal')
         .setTitle('New Support Ticket')
-        .addComponents(new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('support_issue').setLabel("Please describe your issue in detail.").setStyle(TextInputStyle.Paragraph).setRequired(true))),
+        .addComponents(new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('support_issue').setLabel("Please describe your issue").setStyle(TextInputStyle.Paragraph).setRequired(true))),
     application: new ModalBuilder()
         .setCustomId('application_ticket_modal')
-        .setTitle('New Application Ticket')
+        .setTitle('New Staff Application')
         .addComponents(
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('q1').setLabel("Experience with Discord communities?").setStyle(TextInputStyle.Paragraph).setRequired(true)),
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('q2').setLabel("How do you handle staff arguments?").setStyle(TextInputStyle.Paragraph).setRequired(true)),
-            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('q3').setLabel("Approach to enforcing rules?").setStyle(TextInputStyle.Paragraph).setRequired(true)),
-            // Add more questions as needed, modals have a 5-component limit. This is a simplified version.
-             new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('q4').setLabel("Why do you want to be a manager here?").setStyle(TextInputStyle.Paragraph).setRequired(true))
+            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('app_q1_region').setLabel("What is your timezone / region?").setStyle(TextInputStyle.Short).setRequired(true)),
+            new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('app_q2_hours').setLabel("How many hours can you be online weekly?").setStyle(TextInputStyle.Short).setRequired(true))
         )
 };
 
@@ -144,7 +141,7 @@ async function handleSelectMenu(interaction) {
 
 async function handleModalSubmit(interaction) {
     const { customId, guild, fields, user } = interaction;
-    let type, embed, channelName;
+    let type, embeds = [], channelName;
 
     await interaction.deferReply({ ephemeral: true });
 
@@ -170,17 +167,43 @@ async function handleModalSubmit(interaction) {
     } else if (customId === 'application_ticket_modal') {
         type = 'application';
         channelName = `🔵・app-${user.username}`;
-        embed = new EmbedBuilder().setTitle(`Application from ${user.username}`).setColor("#9B59B6")
+        
+        const initialAnswersEmbed = new EmbedBuilder()
+            .setTitle(`Application from ${user.username}`)
+            .setColor("#9B59B6")
+            .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
             .addFields(
-                { name: "Experience with Discord communities?", value: fields.getTextInputValue('q1')},
-                { name: "How do you handle staff arguments?", value: fields.getTextInputValue('q2')},
-                { name: "Approach to enforcing rules?", value: fields.getTextInputValue('q3')},
-                { name: "Why do you want to be a manager here?", value: fields.getTextInputValue('q4')}
+                { name: "Timezone / Region", value: fields.getTextInputValue('app_q1_region')},
+                { name: "Weekly Hours Online", value: fields.getTextInputValue('app_q2_hours')}
+            )
+            .setTimestamp();
+
+        const questionsEmbed = new EmbedBuilder()
+            .setTitle("📝 Please answer the following questions:")
+            .setColor("#9B59B6")
+            .setDescription(
+                "1. What experience do you have managing or moderating Discord communities?\n\n" +
+                "2. How would you handle a situation where two staff members are arguing in public channels?\n\n" +
+                "3. What's your approach to enforcing rules fairly but firmly?\n\n" +
+                "4. How do you motivate and manage a team of moderators or staff?\n\n" +
+                "5. If the server suddenly gets raided, what's your first response?\n\n" +
+                "6. Have you ever had to remove someone from a team you were managing? Why and how?\n\n" +
+                "7. How do you keep the server active and engaged over time?\n\n" +
+                "8. What tools or bots are you familiar with for moderation or server management?\n\n" +
+                "9. How would you balance being friendly with members and staying professional as staff?\n\n" +
+                "10. Why do you want to be a manager on this specific server?"
             );
+
+        embeds.push(initialAnswersEmbed, questionsEmbed);
     } else {
         return;
     }
     
+    // This part handles single-embed cases
+    if (embeds.length === 0 && embed) {
+        embeds.push(embed);
+    }
+
     try {
         const category = CONFIG.TICKET_CATEGORIES[type];
         const channel = await guild.channels.create({
@@ -202,7 +225,7 @@ async function handleModalSubmit(interaction) {
              ticketButtons.addComponents(new ButtonBuilder().setLabel("Pay Now").setStyle(ButtonStyle.Link).setURL(CONFIG.PAY_NOW_URL).setEmoji('💸'));
         }
 
-        await channel.send({ content: `Welcome <@${user.id}>! <@&${CONFIG.OWNER_ROLE_ID}> will be with you shortly.`, embeds: [embed], components: [ticketButtons] });
+        await channel.send({ content: `Welcome <@${user.id}>! <@&${CONFIG.OWNER_ROLE_ID}> will be with you shortly.`, embeds: embeds, components: [ticketButtons] });
         await interaction.editReply({ content: `Your ticket has been created: <#${channel.id}>`, ephemeral: true });
 
     } catch (error) {
@@ -298,6 +321,24 @@ async function handleAddUserModal(interaction) {
     await interaction.reply({ content: `Added ${user} to this ticket.` });
 }
 
+async function handleTicketSelectCommand(interaction) {
+    const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId('ticket_select_menu')
+        .setPlaceholder('Select a ticket type...')
+        .addOptions([
+            { label: '🛒 Order', description: 'Place a new order.', value: 'order' },
+            { label: '❓ Support', description: 'Get help or ask questions.', value: 'support' },
+            { label: '📄 Application', description: 'Apply for a position.', value: 'application' },
+        ]);
+
+    const row = new ActionRowBuilder().addComponents(selectMenu);
+
+    await interaction.reply({
+        content: 'Please select the type of ticket you would like to create from the dropdown below.',
+        components: [row],
+        ephemeral: true,
+    });
+}
 
 module.exports = {
   handleTicketPanel,
@@ -306,6 +347,7 @@ module.exports = {
   handleModalSubmit,
   handleTicketButtons,
   handleAddUserModal,
+  handleTicketSelectCommand,
   handleStatus,
   CONFIG,
 }; 

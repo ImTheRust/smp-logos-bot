@@ -14,6 +14,7 @@ require("dotenv").config();
 const ticketSystem = require("./ticket-system.js");
 const rulesSystem = require("./rules-system.js");
 const welcome = require("./welcome.js");
+const gallerySystem = require("./gallery-system.js");
 
 const client = new Client({
   intents: [
@@ -80,7 +81,13 @@ const commands = [
     description: "Create the main server rules panel (admin only).",
     type: ApplicationCommandType.ChatInput,
   },
+  {
+    name: "ticket-select",
+    description: "Shows the ticket creation selection menu.",
+    type: ApplicationCommandType.ChatInput,
+  },
 ];
+commands.push(gallerySystem.data.toJSON());
 
 const REVIEW_ROLE_ID = "1385512549428236299";
 const REVIEW_CHANNEL_ID = "1385512596878262375";
@@ -133,6 +140,10 @@ client.on("interactionCreate", async (interaction) => {
         await handleServerInfoCommand(interaction);
     } else if (commandName === "rules") {
         await rulesSystem.handleRulesPanel(interaction);
+    } else if (commandName === "submit") {
+        await gallerySystem.execute(interaction);
+    } else if (commandName === "ticket-select") {
+        await ticketSystem.handleTicketSelectCommand(interaction);
     }
   } else if (interaction.isButton()) {
     const { customId } = interaction;
