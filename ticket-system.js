@@ -336,7 +336,6 @@ async function handleTicketSelectCommand(interaction) {
     await interaction.reply({
         content: 'Please select the type of ticket you would like to create from the dropdown below.',
         components: [row],
-        ephemeral: true,
     });
 }
 

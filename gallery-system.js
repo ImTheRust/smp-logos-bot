@@ -22,7 +22,8 @@ module.exports = {
                 .setDescription('The price of the logo.')
                 .setRequired(true)),
     async execute(interaction) {
-        if (interaction.user.id !== process.env.OWNER_ID) {
+        const ownerRoleId = '1385512540532113408';
+        if (!interaction.member.roles.cache.has(ownerRoleId)) {
             return interaction.reply({ content: 'This command is for the bot owner only.', ephemeral: true });
         }
 
