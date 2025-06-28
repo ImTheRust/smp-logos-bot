@@ -15,6 +15,7 @@ const discordTranscripts = require("discord-html-transcripts");
 // Configuration
 const CONFIG = {
   OWNER_ROLE_ID: "1385512540532113408",
+  TICKET_MOD_ROLE_ID: "1385556805865701447",
   TICKET_CATEGORIES: {
     order: "1385627882528706570",
     support: "1385627924304105595",
@@ -214,6 +215,7 @@ async function handleModalSubmit(interaction) {
                 { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
                 { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel] },
                 { id: CONFIG.OWNER_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel] },
+                { id: CONFIG.TICKET_MOD_ROLE_ID, allow: [PermissionsBitField.Flags.ViewChannel] },
             ],
         });
 
@@ -239,7 +241,7 @@ async function handleTicketButtons(interaction) {
 
     if (customId.startsWith('close_ticket_request')) {
         const userId = customId.split('_')[3];
-        if (member.id !== userId && !member.roles.cache.has(CONFIG.OWNER_ROLE_ID)) {
+        if (member.id !== userId && !member.roles.cache.has(CONFIG.OWNER_ROLE_ID) && !member.roles.cache.has(CONFIG.TICKET_MOD_ROLE_ID)) {
             return interaction.reply({ content: "You cannot initiate closing this ticket.", ephemeral: true });
         }
         const confirmEmbed = new EmbedBuilder().setTitle("Confirmation").setDescription(`Are you sure you want to close this ticket? This action cannot be undone.\n\n<@${member.id}> has requested to close this ticket. An admin must confirm.` ).setColor("Yellow");
@@ -250,7 +252,7 @@ async function handleTicketButtons(interaction) {
         await interaction.update({ embeds: [confirmEmbed], components: [confirmButtons] });
 
     } else if (customId === 'confirm_close_ticket') {
-        if (!member.roles.cache.has(CONFIG.OWNER_ROLE_ID)) {
+        if (!member.roles.cache.has(CONFIG.OWNER_ROLE_ID) && !member.roles.cache.has(CONFIG.TICKET_MOD_ROLE_ID)) {
             return interaction.reply({ content: "You do not have permission to close this ticket.", ephemeral: true });
         }
         await interaction.update({ content: "Closing and archiving ticket...", components: [], embeds: [] });
@@ -280,7 +282,7 @@ async function handleTicketButtons(interaction) {
 }
 
 async function handleStatus(interaction) {
-     if (!interaction.member.roles.cache.has(CONFIG.OWNER_ROLE_ID)) {
+     if (!interaction.member.roles.cache.has(CONFIG.OWNER_ROLE_ID) && !interaction.member.roles.cache.has(CONFIG.TICKET_MOD_ROLE_ID)) {
         return interaction.reply({ content: "You do not have permission to use status commands.", ephemeral: true });
     }
     const command = interaction.commandName;
