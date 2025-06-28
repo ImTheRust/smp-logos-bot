@@ -34,13 +34,6 @@ module.exports = {
         const description = interaction.options.getString('description');
         const price = interaction.options.getString('price');
 
-        const galleryChannelId = '1385512598060925011';
-        const galleryChannel = await interaction.client.channels.fetch(galleryChannelId);
-
-        if (!galleryChannel) {
-            return interaction.editReply({ content: 'Could not find the gallery channel.', ephemeral: true });
-        }
-
         const embed = new EmbedBuilder()
             .setTitle(title)
             .setDescription(description)
@@ -54,13 +47,13 @@ module.exports = {
             .setFooter({ text: 'RustFX Studios', iconURL: interaction.client.user.displayAvatarURL() });
 
         try {
-            const message = await galleryChannel.send({ embeds: [embed] });
+            const message = await interaction.channel.send({ embeds: [embed] });
             await message.react('🔥');
             await message.react('⭐');
 
-            await interaction.editReply({ content: 'Successfully submitted the logo to the gallery!', ephemeral: true });
+            await interaction.editReply({ content: 'Successfully submitted the logo to this channel!', ephemeral: true });
         } catch (error) {
-            console.error('Failed to send message to gallery channel:', error);
+            console.error('Failed to send message to channel:', error);
             await interaction.editReply({ content: 'There was an error while submitting the logo.', ephemeral: true });
         }
     },
