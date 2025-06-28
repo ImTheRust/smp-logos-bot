@@ -26,9 +26,18 @@ const CONFIG = {
   PRICES_EMBED: new EmbedBuilder()
     .setTitle("💰 Products & Prices")
     .setColor("#5865F2")
-    .addFields(
-      { name: "💰 Basic Logo", value: "$11-15\nCustom SMP Design\n2 Revisions Included\nHigh Resolution Files", inline: true },
-      { name: "💰 Premium Logo", value: "$16-20\nCustom SMP Design\n4 Revisions Included\nHigh Resolution Files\nExtra Details & Effects", inline: true }
+    .setDescription(
+      "**🖼️ Logos**\n" +
+      "\n" +
+      "**💰 Basic Logo**\n$11-15\nCustom SMP Design\n2 Revisions Included\nHigh Resolution Files\n" +
+      "\n" +
+      "**💰 Premium Logo**\n$16-20\nCustom SMP Design\n4 Revisions Included\nHigh Resolution Files\nExtra Details & Effects\n" +
+      "\n" +
+      "**🎬 Thumbnails**\n" +
+      "\n" +
+      "**Simple Thumbnail:** $5-7\n" +
+      "**Standard Thumbnail:** $7-10\n" +
+      "**Premium Thumbnail:** $10-15\n"
     ),
   PAYMENT_METHODS_EMBED: new EmbedBuilder()
     .setTitle("💳 Payment Methods")
